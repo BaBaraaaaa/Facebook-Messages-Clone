@@ -5,12 +5,17 @@ import jwt from "jsonwebtoken";
 
 
 export const register = async (req: Request, res: Response) => {
+    console.log("Register endpoint hit", req.body);
     try{
-        const { username, email, password } = req.body;
+        const { name, email, password } = req.body;
         const pwHash = await bcrypt.hash(password, 10);
-        const user = new User({ username, email, password: pwHash });
-        await user.save();
-        res.status(201).json({ message: "User registered successfully" });
+        const user = new User({ name, email, password: pwHash });
+        await user.save().then(() => {
+            res.status(201).json({ message: "User registered successfully" });
+        }).catch(err => {
+            res.status(500).json({ message: "Error saving user" });
+        });
+
     } catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
@@ -23,7 +28,7 @@ export const login = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
