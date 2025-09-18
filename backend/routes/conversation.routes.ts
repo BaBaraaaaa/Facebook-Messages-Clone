@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { createConversation, getUserConversations } from "../controllers/conversation.controller";
+import { createConversation, getUserConversations, markAsRead } from "../controllers/conversation.controller";
 
-const router = Router();
+const ConversationRouter = Router();
 
-router.post("/", createConversation);
-router.get("/:userId", getUserConversations);
-
-export default router;
+ConversationRouter.post("/", createConversation);
+ConversationRouter.get("/:userId", getUserConversations);
+ConversationRouter.post("/:id/read", markAsRead);
+export default ConversationRouter;

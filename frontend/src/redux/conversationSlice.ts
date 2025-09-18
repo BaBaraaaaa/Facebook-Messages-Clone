@@ -28,6 +28,22 @@ export const fetchConversations = createAsyncThunk<IConversation[], string>(
     return Array.isArray(data) ? data : [data];
   }
 );
+// Đánh dấu cuộc trò chuyện đã đọc
+export const markAsRead = createAsyncThunk(
+  "conversation/markAsRead",
+  async (conversationId: string) => {
+    const { data } = await conversationService.markAsRead(conversationId);
+    return data;
+  }
+);
+// Tạo cuộc trò chuyện mới
+export const createConversation = createAsyncThunk<
+  IConversation,
+  { name?: string; memberEmails: string[] }
+>("conversation/create", async (payload) => {
+  const { data } = await conversationService.create({ members: payload.memberEmails });
+  return data;
+});
 
 const conversationSlice = createSlice({
   name: "conversation",
@@ -60,6 +76,18 @@ const conversationSlice = createSlice({
     builder.addCase(fetchConversations.rejected, (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
+    });
+    builder.addCase(markAsRead.fulfilled, (state, action) => {
+      // Reset unreadCounts cho user hiện tại
+      const userId = localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user")!)._id
+        : null;
+      if (!userId) return;
+      const convId = action.meta.arg;
+      const conv = state.list.find((c) => c._id === convId);
+      if (conv && conv.unreadCounts) {
+        conv.unreadCounts[userId] = 0;
+      }
     });
   },
 });

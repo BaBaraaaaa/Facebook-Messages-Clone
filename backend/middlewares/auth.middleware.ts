@@ -15,6 +15,7 @@ const authHeader = req.headers.authorization?.split(" ")[1];
   try {
     const payload = jwt.verify(authHeader, process.env.JWT_SECRET as string);
     req.user = payload;
+    console.log(payload);
   } catch (error) {
     return res.status(403).json({ message: "Forbidden" });
   }
