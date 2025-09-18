@@ -10,8 +10,9 @@ export const register = async (req: Request, res: Response) => {
         const { name, email, password } = req.body;
         const pwHash = await bcrypt.hash(password, 10);
         const user = new User({ name, email, password: pwHash });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string);
         await user.save().then(() => {
-            res.status(201).json({ message: "User registered successfully" });
+            res.status(201).json({ message: "User registered successfully" , user: user ,token: token });
         }).catch(err => {
             res.status(500).json({ message: "Error saving user" });
         });
@@ -33,7 +34,7 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Invalid credentials" });
         }
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string);
-        res.status(200).json({ token });
+        res.status(200).json({ user: user ,token: token });
     } catch (error) {
         res.status(500).json({ message: "Internal server error" });
     }
