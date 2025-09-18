@@ -19,11 +19,13 @@ const initialState: ConversationState = {
   status: "idle",
   error: undefined,
 };
-export const fetchConversations = createAsyncThunk(
-  "conversation/fetchAll",
-  async () => {
-    const { data } = await conversationService.getAll();
-    return data;
+// Lấy tất cả cuộc trò chuyện theo userId
+export const fetchConversations = createAsyncThunk<IConversation[], string>(
+  "conversation/fetchConversations",
+  async (userId) => {
+    const { data } = await conversationService.getByUserId(userId);
+    // Đảm bảo trả về IConversation[]
+    return Array.isArray(data) ? data : [data];
   }
 );
 

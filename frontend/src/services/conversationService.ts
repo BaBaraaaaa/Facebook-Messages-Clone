@@ -4,8 +4,8 @@ import {type IConversation } from "../types/conversation";
 
 export const conversationService = {
   getAll: () => axiosClient.get<IConversation[]>("/conversations"),
-  getById: (id: string) =>
-    axiosClient.get<IConversation>(`/conversations/${id}`),
+  getByUserId: (userId: string) =>
+    axiosClient.get<IConversation[]>(`/conversations/${userId}`),
   create: (payload: { name?: string; memberIds: string[] }) =>
     axiosClient.post<IConversation>("/conversations", payload),
 };

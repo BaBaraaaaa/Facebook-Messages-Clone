@@ -2,9 +2,11 @@ import { Box, Paper } from "@mui/material";
 import ChatHeader from "../components/ChatHeader";
 import Sidebar from "../components/Sidebar";
 import ConversationHeader from "../components/ConversationHeader";
+import { useAppSelector } from "../redux/hook";
 import ChatWindow from "../components/ChatWindow";
 
 export default function Chat() {
+  const activeId = useAppSelector((state) => state.conversation.activeId);
   return (
     <Box
       sx={{
@@ -43,7 +45,7 @@ export default function Chat() {
             minWidth: 0,
           }}
         >
-          <ConversationHeader />
+          <ConversationHeader conversationId={activeId} />
           <ChatWindow />
         </Paper>
       </Box>

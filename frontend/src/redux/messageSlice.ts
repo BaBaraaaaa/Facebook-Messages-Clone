@@ -1,35 +1,55 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { type IMessage } from "../types/message"
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import { type IMessage } from "../types/message";
+import { messageService } from "../services/messageService";
 
 interface MessageState {
-  byConversation: Record<string, IMessage[]>; // {conversationId: messages[]}
+  list: IMessage[];
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error?: string;
 }
 
 const initialState: MessageState = {
-  byConversation: {},
+  list: [],
+  status: "idle",
 };
 
+export const fetchMessages = createAsyncThunk(
+  "message/fetchByConversation",
+  async (conversationId: string) => {
+    const { data } = await messageService.getMessages(conversationId);
+    return data as IMessage[];
+  }
+);
 const messageSlice = createSlice({
-  name: 'message',
+  name: "message",
   initialState,
   reducers: {
-    setMessages: (
-      state,
-      action: PayloadAction<{ conversationId: string; messages: IMessage[] }>
-    ) => {
-      const { conversationId, messages } = action.payload;
-      state.byConversation[conversationId] = messages;
+    addMessage: (state, action: PayloadAction<IMessage>) => {
+      state.list.push(action.payload);
     },
-    addMessage: (
-      state,
-      action: PayloadAction<{ conversationId: string; message: IMessage }>
-    ) => {
-      const { conversationId, message } = action.payload;
-      if (!state.byConversation[conversationId]) state.byConversation[conversationId] = [];
-      state.byConversation[conversationId].push(message);
+    clearMessages: (state) => {
+      state.list = [];
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMessages.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchMessages.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.list = action.payload;
+      })
+      .addCase(fetchMessages.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      });
   },
 });
 
-export const { setMessages, addMessage } = messageSlice.actions;
+export const { clearMessages, addMessage } = messageSlice.actions;
 export default messageSlice.reducer;
